@@ -1,0 +1,15 @@
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+data/
+recordings/
+*.wav
+*.db
+.env
+.env.*
+*.pem
+*.key
+.pytest_cache/
+.idea/
+.vscode/

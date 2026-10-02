@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ product }} · {{ company }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='console.css') }}">
+</head>
+<body>
+  <main class="card">
+    <p class="company">{{ company }}</p>
+    <h1>{{ product }}</h1>
+    <p class="lead">{{ tagline }}</p>
+    <form method="post" action="{{ url_for('login_submit') }}">
+      <label>Usuario
+        <input name="username" autocomplete="username" required>
+      </label>
+      <label style="margin-top: 12px">Contraseña
+        <input name="password" type="password" autocomplete="current-password" required>
+      </label>
+      <p class="error">{{ error }}</p>
+      <button class="primary" type="submit">Entrar a la estación</button>
+    </form>
+    <p class="hint">Primera vez en este equipo: {{ default_user }} / {{ default_password }}</p>
+  </main>
+</body>
+</html>

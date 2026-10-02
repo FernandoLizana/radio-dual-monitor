@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ product }} · {{ company }}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='console.css') }}">
+</head>
+<body>
+  <main class="shell">
+    <header class="top">
+      <div>
+        <p class="company">{{ company }}</p>
+        <h1>{{ product }}</h1>
+      </div>
+      <form method="post" action="{{ url_for('logout') }}">
+        <button class="ghost" type="submit">Salir · {{ user }}</button>
+      </form>
+    </header>
+    <p class="lead">{{ tagline }}</p>
+    <ol class="steps">
+      {% for step in steps %}
+      <li><strong>0{{ loop.index }}</strong>{{ step }}</li>
+      {% endfor %}
+    </ol>
+
+    <section class="desk" aria-label="Niveles del transmisor">
+      <div class="mode">
+        <span id="lamp" class="lamp"></span>
+        <span id="mode">EN ESPERA</span>
+      </div>
+      <p id="status" class="status">Conectando con la estación...</p>
+      <div class="meters">
+        <article class="meter tx">
+          <h2>Envío</h2>
+          <p>Canal izquierdo · sale del transmisor</p>
+          <div class="track"><div id="tx" class="fill tx"></div></div>
+          <strong id="tx-value" class="level">0</strong>
+        </article>
+        <article class="meter rx">
+          <h2>Recepción</h2>
+          <p>Canal derecho · vuelve a la estación</p>
+          <div class="track"><div id="rx" class="fill rx"></div></div>
+          <strong id="rx-value" class="level">0</strong>
+        </article>
+      </div>
+      <p class="spectrum-title">Espectro del mensaje</p>
+      <div id="spectrum" class="spectrum" aria-hidden="true"></div>
+    </section>
+
+    <section class="panel controls">
+      <div class="grid">
+        <label>Micrófono
+          <select id="device"></select>
+        </label>
+        <label>Duración (s)
+          <input id="seconds" type="number" min="1" max="300" value="10">
+        </label>
+        <label>Umbral
+          <input id="threshold" type="number" min="1" max="1000" value="20">
+        </label>
+        <label>Silencio (s)
+          <input id="silence" type="number" min="1" max="30" value="3">
+        </label>
+      </div>
+      <div class="actions">
+        <button id="record" class="primary" type="button">Grabar espectro</button>
+        <button id="listen" type="button">Escuchar transmisor</button>
+        <button id="stop" class="danger" type="button">Detener</button>
+      </div>
+    </section>
+
+    <section class="panel takes">
+      <h2>Mensajes guardados</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Duración</th>
+            <th>Tipo</th>
+            <th>Espectro</th>
+            <th>Envío</th>
+            <th>Recepción</th>
+          </tr>
+        </thead>
+        <tbody id="takes"></tbody>
+      </table>
+    </section>
+  </main>
+  <script>
+    const spectrum = document.getElementById("spectrum");
+    for (let band = 0; band < 24; band += 1) {
+      spectrum.appendChild(document.createElement("span"));
+    }
+    const bars = spectrum.querySelectorAll("span");
+    let revision = -1;
+    let mode = "idle";
+
+    function meter(id, value) {
+      const shown = Math.max(0, Math.min(100, value));
+      document.getElementById(id).style.width = shown + "%";
+      document.getElementById(id + "-value").textContent = String(Math.min(999, Math.round(value)));
+    }
+
+    function player(url) {
+      if (!url) return "—";
+      const audio = document.createElement("audio");
+      audio.controls = true;
+      audio.preload = "none";
+      audio.src = url;
+      return audio;
+    }
+
+    async function loadTakes() {
+      const response = await fetch("/api/recordings");
+      if (response.status === 401) { location.href = "/login"; return; }
+      const payload = await response.json();
+      const body = document.getElementById("takes");
+      body.replaceChildren();
+      for (const take of payload.recordings) {
+        const row = document.createElement("tr");
+        const cells = [take.modified, take.seconds.toFixed(1) + " s", take.kind];
+        for (const text of cells) {
+          const cell = document.createElement("td");
+          cell.textContent = text;
+          row.appendChild(cell);
+        }
+        for (const key of ["espectro", "envio", "recepcion"]) {
+          const cell = document.createElement("td");
+          const url = key === "espectro" ? (take.espectro || take.mono) : take[key];
+          cell.append(player(url));
+          row.appendChild(cell);
+        }
+        body.appendChild(row);
+      }
+      if (!payload.recordings.length) {
+        const row = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 6;
+        cell.textContent = "Todavía no hay mensajes. Acerca el micrófono al transmisor y escucha.";
+        row.appendChild(cell);
+        body.appendChild(row);
+      }
+    }
+
+    async function loadDevices() {
+      const response = await fetch("/api/devices");
+      if (!response.ok) return;
+      const payload = await response.json();
+      const select = document.getElementById("device");
+      select.replaceChildren();
+      for (const device of payload.devices) {
+        const option = document.createElement("option");
+        option.value = device.index;
+        option.textContent = device.name;
+        select.appendChild(option);
+      }
+    }
+
+    async function tick() {
+      const response = await fetch("/api/status");
+      if (response.status === 401) { location.href = "/login"; return; }
+      const snap = await response.json();
+      mode = snap.mode;
+      document.getElementById("status").textContent = snap.status;
+      document.getElementById("lamp").className = "lamp " + (snap.mode === "idle" ? "" : snap.mode);
+      document.getElementById("mode").textContent = {idle: "EN ESPERA", timed: "GRABANDO", threshold: "ESCUCHANDO"}[snap.mode] || "EN ESPERA";
+      meter("tx", snap.envio);
+      meter("rx", snap.recepcion);
+      snap.bands.forEach((band, index) => {
+        if (bars[index]) bars[index].style.height = Math.max(4, band) + "%";
+      });
+      document.getElementById("listen").textContent = snap.mode === "threshold" ? "Dejar de escuchar" : "Escuchar transmisor";
+      const busy = snap.busy;
+      document.getElementById("record").disabled = busy;
+      document.getElementById("stop").disabled = !busy;
+      document.getElementById("listen").disabled = busy && snap.mode !== "threshold";
+      if (snap.revision !== revision) {
+        revision = snap.revision;
+        await loadTakes();
+      }
+    }
+
+    async function post(url, body) {
+      const response = await fetch(url, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(body || {}),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok && payload.error) {
+        document.getElementById("status").textContent = payload.error;
+      }
+    }
+
+    document.getElementById("record").addEventListener("click", () => {
+      const device = document.getElementById("device").value;
+      post("/api/record", {
+        seconds: document.getElementById("seconds").value,
+        device_index: device === "" ? null : Number(device),
+      });
+    });
+    document.getElementById("listen").addEventListener("click", () => {
+      if (mode === "threshold") { post("/api/stop"); return; }
+      const device = document.getElementById("device").value;
+      post("/api/listen", {
+        threshold: document.getElementById("threshold").value,
+        silence: document.getElementById("silence").value,
+        device_index: device === "" ? null : Number(device),
+      });
+    });
+    document.getElementById("stop").addEventListener("click", () => post("/api/stop"));
+
+    loadDevices();
+    tick();
+    setInterval(tick, 200);
+  </script>
+</body>
+</html>

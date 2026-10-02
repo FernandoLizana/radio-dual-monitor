@@ -1,0 +1,174 @@
+:root {
+  --bg: #0e141b;
+  --panel: #17212b;
+  --ink: #e8eef5;
+  --muted: #8ea0b5;
+  --line: #2c3d4e;
+  --tx: #f0a202;
+  --rx: #2ec4b6;
+  --danger: #e85d4c;
+  --field: #0c1218;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    radial-gradient(1200px 400px at 10% -10%, rgba(240, 162, 2, 0.16), transparent 50%),
+    var(--bg);
+  color: var(--ink);
+  font-family: "Segoe UI", system-ui, sans-serif;
+}
+
+a { color: var(--rx); }
+
+.shell { width: min(1080px, calc(100% - 32px)); margin: 0 auto; padding: 28px 0 48px; }
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  align-items: flex-end;
+}
+
+.company {
+  margin: 0;
+  color: var(--tx);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+}
+
+h1 { margin: 4px 0 0; font-size: 42px; letter-spacing: -0.04em; }
+
+.lead { max-width: 720px; color: var(--muted); line-height: 1.5; }
+
+.steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 18px 0 22px;
+  padding: 0;
+  list-style: none;
+}
+
+.steps li {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 14px 16px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.steps strong { display: block; color: var(--ink); margin-bottom: 4px; }
+
+.desk, .panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+}
+
+.mode { display: flex; align-items: center; gap: 10px; font-weight: 700; }
+
+.lamp {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #5c6b7a;
+  box-shadow: 0 0 0 4px rgba(92, 107, 122, 0.2);
+}
+
+.lamp.timed { background: var(--tx); box-shadow: 0 0 0 4px rgba(240, 162, 2, 0.2); }
+.lamp.threshold { background: var(--rx); box-shadow: 0 0 0 4px rgba(46, 196, 182, 0.2); }
+
+.status { color: var(--muted); min-height: 1.4em; }
+
+.meters { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 14px; }
+
+.meter h2 { margin: 0; font-size: 16px; }
+.meter.tx h2 { color: var(--tx); }
+.meter.rx h2 { color: var(--rx); }
+.meter p { margin: 4px 0 8px; color: var(--muted); font-size: 13px; }
+
+.track { height: 18px; background: var(--field); border-radius: 999px; overflow: hidden; }
+.fill { height: 100%; width: 0; border-radius: inherit; }
+.fill.tx { background: linear-gradient(90deg, #8a5a00, var(--tx)); }
+.fill.rx { background: linear-gradient(90deg, #0e6e66, var(--rx)); }
+
+.level { display: block; margin-top: 6px; font-family: Consolas, monospace; font-size: 28px; }
+
+.spectrum-title { margin: 16px 0 8px; color: var(--muted); font-size: 13px; }
+
+.spectrum {
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 120px;
+  padding: 10px;
+  background: var(--field);
+  border-radius: 12px;
+}
+
+.spectrum span {
+  flex: 1;
+  height: 4%;
+  border-radius: 4px 4px 0 0;
+  background: var(--rx);
+  transform-origin: bottom;
+}
+
+.spectrum span:nth-child(-n + 12) { background: var(--tx); }
+
+.controls { margin-top: 16px; }
+
+.grid {
+  display: grid;
+  grid-template-columns: 1.4fr repeat(3, 0.6fr);
+  gap: 12px;
+}
+
+label { display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 13px; }
+
+input, select, button {
+  font: inherit;
+  color: var(--ink);
+  background: var(--field);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+}
+
+button { cursor: pointer; }
+button.primary { background: var(--tx); color: #1a1203; border: 0; font-weight: 700; }
+button.danger { background: var(--danger); color: white; border: 0; font-weight: 700; }
+button.ghost { background: transparent; }
+
+.actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+
+.takes { margin-top: 16px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 10px 8px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+th { color: var(--muted); font-size: 12px; letter-spacing: 0.04em; }
+audio { width: 180px; height: 32px; }
+
+.card {
+  width: min(480px, calc(100% - 32px));
+  margin: 10vh auto;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 28px;
+}
+
+.error { color: #ffb4a8; min-height: 1.2em; }
+.hint { color: var(--muted); font-size: 13px; }
+
+@media (max-width: 800px) {
+  .steps, .meters, .grid { grid-template-columns: 1fr; }
+  h1 { font-size: 34px; }
+  audio { width: 140px; }
+}
