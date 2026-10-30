@@ -142,7 +142,7 @@ La carpeta del proyecto se puede mover o copiar a otro equipo. Hay que volver a 
 
 ## Uso
 
-La primera vez, en las dos consolas, el acceso es el usuario local `Admin` con la contraseña `Admin1234`. Esa cuenta se crea en el equipo al abrir el programa. La contraseña se guarda hasheada en `data/usuarios.db`. No viaja en el repositorio.
+La primera vez, en las dos consolas, el acceso es el usuario local `Admin`. Esa cuenta se crea en el equipo al abrir el programa, con la contraseña de la variable `RADIO_ADMIN_PASSWORD`. Si no la defines, el programa genera una al azar, la muestra en la terminal y la deja en `data/clave_inicial.txt`. La contraseña se guarda hasheada en `data/usuarios.db`. No viaja en el repositorio.
 
 1. Elige el micrófono que apunta al transmisor.
 2. Deja duración, umbral y silencio, o ajústalos.

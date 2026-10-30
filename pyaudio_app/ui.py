@@ -10,7 +10,7 @@ import webbrowser
 from pathlib import Path
 from tkinter import messagebox, ttk
 
-from pyaudio_app.auth import DEFAULT_PASSWORD, DEFAULT_USER
+from pyaudio_app.auth import first_run_hint
 from pyaudio_app.brand import COMPANY, PRODUCT, STEPS, TAGLINE, WINDOW_TITLE
 from pyaudio_app.station import Station
 from pyaudio_app.storage import Take, list_takes
@@ -116,7 +116,9 @@ class App:
         ttk.Button(card, text="Entrar a la estación", style="Accent.TButton", command=self._login).pack(anchor="w")
         ttk.Label(
             card,
-            text=f"Primera vez en este equipo: {DEFAULT_USER} / {DEFAULT_PASSWORD}",
+            text=first_run_hint(),
+            wraplength=460,
+            justify="left",
             style="Muted.TLabel",
         ).pack(anchor="w", pady=(16, 0))
         self.username.focus_set()

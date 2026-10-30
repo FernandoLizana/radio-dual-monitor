@@ -1,10 +1,12 @@
 import array
 import math
+import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
-from pyaudio_app.auth import DEFAULT_PASSWORD, DEFAULT_USER, UserStore
+from pyaudio_app.auth import DEFAULT_USER, INITIAL_PASSWORD_FILE, PASSWORD_ENV, UserStore
 from pyaudio_app.storage import list_takes, save_clip
 from pyaudio_app.wavutil import channel_levels, rms_level, spectrum_bands, split_stereo, wav_duration, write_wav
 
@@ -83,10 +85,26 @@ class StorageTests(unittest.TestCase):
 class AuthTests(unittest.TestCase):
     def test_default_user_and_rejects_wrong_password(self) -> None:
         with tempfile.TemporaryDirectory() as folder:
-            store = UserStore(Path(folder) / "usuarios.db")
-            self.assertTrue(store.authenticate(DEFAULT_USER, DEFAULT_PASSWORD))
+            store = UserStore(Path(folder) / "usuarios.db", initial_password="clave-local")
+            self.assertTrue(store.authenticate(DEFAULT_USER, "clave-local"))
             self.assertFalse(store.authenticate(DEFAULT_USER, "otra"))
-            self.assertFalse(store.authenticate("nadie", DEFAULT_PASSWORD))
+            self.assertFalse(store.authenticate("nadie", "clave-local"))
+
+    def test_password_comes_from_env(self) -> None:
+        with tempfile.TemporaryDirectory() as folder, mock.patch.dict(os.environ, {PASSWORD_ENV: "desde-env"}):
+            store = UserStore(Path(folder) / "usuarios.db")
+            self.assertTrue(store.authenticate(DEFAULT_USER, "desde-env"))
+            self.assertFalse((Path(folder) / INITIAL_PASSWORD_FILE).exists())
+
+    def test_without_env_generates_random_password(self) -> None:
+        env = {k: v for k, v in os.environ.items() if k != PASSWORD_ENV}
+        with tempfile.TemporaryDirectory() as folder, mock.patch.dict(os.environ, env, clear=True):
+            store = UserStore(Path(folder) / "usuarios.db")
+            saved = (Path(folder) / INITIAL_PASSWORD_FILE).read_text(encoding="utf-8")
+            user, password = saved.strip().split(" / ")
+            self.assertEqual(user, DEFAULT_USER)
+            self.assertTrue(store.authenticate(DEFAULT_USER, password))
+            self.assertFalse(store.authenticate(DEFAULT_USER, "Admin1234"))
 
 
 def _read_samples(path: Path) -> list[int]:

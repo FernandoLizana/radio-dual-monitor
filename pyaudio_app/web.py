@@ -9,7 +9,7 @@ from pathlib import Path
 
 from flask import Flask, abort, jsonify, redirect, render_template, request, send_file, session, url_for
 
-from pyaudio_app.auth import DEFAULT_PASSWORD, DEFAULT_USER
+from pyaudio_app.auth import first_run_hint
 from pyaudio_app.brand import COMPANY, PRODUCT, STEPS, TAGLINE
 from pyaudio_app.paths import DATA_DIR, WEB_HOST, WEB_PORT
 from pyaudio_app.station import Station
@@ -50,8 +50,7 @@ def create_app(station: Station, secret_key: str | None = None) -> Flask:
             product=PRODUCT,
             tagline=TAGLINE,
             steps=STEPS,
-            default_user=DEFAULT_USER,
-            default_password=DEFAULT_PASSWORD,
+            first_run=first_run_hint(),
             error="",
         )
 
@@ -68,8 +67,7 @@ def create_app(station: Station, secret_key: str | None = None) -> Flask:
             product=PRODUCT,
             tagline=TAGLINE,
             steps=STEPS,
-            default_user=DEFAULT_USER,
-            default_password=DEFAULT_PASSWORD,
+            first_run=first_run_hint(),
             error="Acceso denegado. Revisa los datos.",
         ), 401
 

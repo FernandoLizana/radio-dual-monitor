@@ -1,8 +1,10 @@
+import os
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
-from pyaudio_app.auth import DEFAULT_PASSWORD, DEFAULT_USER
+from pyaudio_app.auth import DEFAULT_USER, PASSWORD_ENV
 from pyaudio_app.station import Station
 from pyaudio_app.storage import save_clip
 from pyaudio_app.web import create_app
@@ -14,7 +16,8 @@ class WebConsoleTests(unittest.TestCase):
         root = Path(self._folder.name)
         frames = b"\x01\x00\xff\xff" * 80
         self.clip = save_clip(root / "recordings", frames, 2, 8000)
-        station = Station(root / "recordings", root / "usuarios.db")
+        with mock.patch.dict(os.environ, {PASSWORD_ENV: "clave-de-prueba"}):
+            station = Station(root / "recordings", root / "usuarios.db")
         self.client = create_app(station, secret_key="test-secret").test_client()
 
     def tearDown(self) -> None:
@@ -31,7 +34,7 @@ class WebConsoleTests(unittest.TestCase):
 
         entered = self.client.post(
             "/login",
-            data={"username": DEFAULT_USER, "password": DEFAULT_PASSWORD},
+            data={"username": DEFAULT_USER, "password": "clave-de-prueba"},
             follow_redirects=True,
         )
         self.assertEqual(entered.status_code, 200)

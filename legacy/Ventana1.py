@@ -1,10 +1,14 @@
 ﻿from Ventana2 import ventana2
 import tkinter as tk
 import os
+import secrets
 import sqlite3
 from tkinter import messagebox
 UsuarioPorDefecto="Admin"
-passwordPorDefecto="Admin1234"
+# Sin contraseña fija en el código: se toma del entorno o se genera una.
+passwordPorDefecto=os.environ.get("RADIO_ADMIN_PASSWORD") or secrets.token_urlsafe(9)
+if not os.environ.get("RADIO_ADMIN_PASSWORD"):
+    print("Contraseña inicial de Admin:", passwordPorDefecto)
 def generarVentana():
     def compararConDataBase(user,password):
         conexion=sqlite3.connect("db.sqlite3")

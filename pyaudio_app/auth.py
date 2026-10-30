@@ -4,19 +4,29 @@ from __future__ import annotations
 
 import hashlib
 import hmac
+import os
 import secrets
 import sqlite3
 from pathlib import Path
 
 DEFAULT_USER = "Admin"
-DEFAULT_PASSWORD = "Admin1234"
+PASSWORD_ENV = "RADIO_ADMIN_PASSWORD"
+INITIAL_PASSWORD_FILE = "clave_inicial.txt"
 _ITERATIONS = 200_000
 
 
+def first_run_hint() -> str:
+    return (
+        f"Primera vez en este equipo: usuario {DEFAULT_USER}. La contraseña es la de "
+        f"{PASSWORD_ENV} o la que quedó en data/{INITIAL_PASSWORD_FILE}."
+    )
+
+
 class UserStore:
-    def __init__(self, db_path: Path) -> None:
+    def __init__(self, db_path: Path, initial_password: str | None = None) -> None:
         self.db_path = db_path
         self.db_path.parent.mkdir(parents=True, exist_ok=True)
+        self._initial_password = initial_password
         self._init_db()
 
     def authenticate(self, username: str, password: str) -> bool:
@@ -54,9 +64,21 @@ class UserStore:
                 )
                 count = connection.execute("SELECT COUNT(*) AS total FROM usuarios").fetchone()["total"]
                 if count == 0:
-                    self._insert(connection, DEFAULT_USER, DEFAULT_PASSWORD)
+                    self._insert(connection, DEFAULT_USER, self._first_password())
         finally:
             connection.close()
+
+    def _first_password(self) -> str:
+        # Sin contraseña conocida en el código: se toma del entorno o se genera
+        # una al azar y se deja solo en este equipo, junto a la base.
+        password = self._initial_password or os.environ.get(PASSWORD_ENV, "")
+        if password:
+            return password
+        password = secrets.token_urlsafe(9)
+        path = self.db_path.parent / INITIAL_PASSWORD_FILE
+        path.write_text(f"{DEFAULT_USER} / {password}\n", encoding="utf-8")
+        print(f"Cuenta inicial creada: {DEFAULT_USER} / {password} (guardada en {path})")
+        return password
 
     def _insert(self, connection: sqlite3.Connection, username: str, password: str) -> None:
         salt = secrets.token_bytes(16)
