@@ -1,6 +1,6 @@
 # Espectro
 
-Espectro es el monitor de audio para radios de **Digital Rider SPA**.
+Espectro es un monitor de audio para radios: escucha el transmisor y guarda lo que se envió y lo que se recibió.
 
 El micrófono del computador escucha la salida de un transmisor. Un mensaje de radio tiene dos lados: lo que la estación envía y lo que recibe de vuelta. Espectro guarda esos dos canales por separado y también el conjunto, para conservar el espectro completo del intercambio.
 
@@ -178,7 +178,7 @@ El nombre del archivo es la fecha y la hora de la toma, por ejemplo `2026-09-29_
 | `pyaudio_app/wavutil.py` | Nivel de cada canal, bandas del espectro y separación del WAV. |
 | `pyaudio_app/storage.py` | Escribe las carpetas del mes y arma la lista de tomas. |
 | `pyaudio_app/auth.py` | Usuarios locales. La contraseña no se guarda en texto plano. |
-| `pyaudio_app/brand.py` | Nombre del producto y de Digital Rider SPA. |
+| `pyaudio_app/brand.py` | Nombre del producto y título de la ventana. |
 | `legacy/` | Referencia de la versión inicial. No es el programa que se ejecuta. |
 
 La consola web pide una clave de sesión la primera vez y la escribe en `data/web_secret`. Ese archivo es de este equipo. No forma parte del código.

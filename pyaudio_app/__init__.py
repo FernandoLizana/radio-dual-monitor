@@ -1,3 +1,3 @@
-"""Espectro, monitor de audio para radios de Digital Rider SPA."""
+"""Espectro: monitor de audio para radios."""
 
 __version__ = "2.0.0"

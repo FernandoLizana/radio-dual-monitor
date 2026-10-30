@@ -35,7 +35,7 @@ class WebConsoleTests(unittest.TestCase):
             follow_redirects=True,
         )
         self.assertEqual(entered.status_code, 200)
-        self.assertIn(b"Digital Rider SPA", entered.data)
+        self.assertIn(b"Monitor de radio", entered.data)
         self.assertIn("Envío".encode(), entered.data)
         self.assertIn("Recepción".encode(), entered.data)
 

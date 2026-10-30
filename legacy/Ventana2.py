@@ -4,7 +4,7 @@ import threading
 
 def ventana2():
 	ventana = tk.Tk()  # Genero Ventana
-	ventana.title("Digital Rider SPA")
+	ventana.title("Espectro")
 	ventana.geometry("500x500") #You want the size of the app to be 500x500
 	ventana.resizable(0, 0)
 	GrabarAudioSimple = tk.Button(ventana, text='Grabar Audio', command=Audio1Canal)
